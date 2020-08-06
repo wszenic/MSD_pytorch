@@ -1,25 +1,27 @@
-from MSD.settings.config import DATA_PATH, TRAIN_FOLDER, TEST_FOLDER, LABEL_FILE
+from MSD.settings.config import LABEL_FILE_TRAIN, LABEL_FILE_TEST
 
 from scipy.io import loadmat
 from PIL import Image
-from glob import glob
 import numpy as np
 
 
 class CarsDataset:
 
-    def __init__(self, is_train=True):
+    def __init__(self, path_list, dataset_type):
         """"
-        label file structure:
+        label matrix structure:
         0-3 :   bounding boxes
         4   :   class_name
         5   :   file_name
         """
-        self.path = DATA_PATH + (TRAIN_FOLDER if is_train else TEST_FOLDER)
-        self.image_paths = [x for x in glob(self.path + "\\*")]
+        self.image_paths = path_list
 
-        labels_list = loadmat(LABEL_FILE)['annotations'].reshape(-1,1)
-        self.labels = np.array([labels_list[x][0][4] for x in range(len(labels_list))]).flatten()
+        label_file = LABEL_FILE_TRAIN if dataset_type in ('train', 'valid') else LABEL_FILE_TEST
+        labels_list = loadmat(label_file)['annotations'].reshape(-1, 1)
+
+        label_dict = {labels_list[x][0][5][0]: labels_list[x][0][4][0][0] for x in range(len(labels_list))}
+
+        self.labels = [label_dict[x.split('\\')[-1]] for x in path_list]
 
     def __len__(self):
         return len(self.image_paths)
@@ -29,8 +31,8 @@ class CarsDataset:
         label = self.labels[item]
 
         image = Image.open(image_path)
+        #im_tensor = self.transforms(image)
 
-        return image, label
-
+        return image, image_path, label
 
 
