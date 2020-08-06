@@ -19,7 +19,11 @@ class CarsDataset:
         label_file = LABEL_FILE_TRAIN if dataset_type in ('train', 'valid') else LABEL_FILE_TEST
         labels_list = loadmat(label_file)['annotations'].reshape(-1, 1)
 
-        label_dict = {labels_list[x][0][5][0]: labels_list[x][0][4][0][0] for x in range(len(labels_list))}
+        if dataset_type in ('train', 'valid'):
+            label_dict = {labels_list[x][0][5][0]: labels_list[x][0][4][0][0] for x in range(len(labels_list))}
+        else:
+            #TODO too few values, no label
+            label_dict = {labels_list[x][0][4][0]: labels_list[x][0][3][0][0] for x in range(len(labels_list))}
 
         self.labels = [label_dict[x.split('\\')[-1]] for x in path_list]
 
@@ -33,6 +37,6 @@ class CarsDataset:
         image = Image.open(image_path)
         #im_tensor = self.transforms(image)
 
-        return image, image_path, label
+        return image, label
 
 
