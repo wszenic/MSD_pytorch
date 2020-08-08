@@ -27,6 +27,7 @@ class CarsDataset:
         self.transforms = transforms.Compose([
             transforms.Resize(256),
             transforms.CenterCrop(224),
+            transforms.RandomHorizontalFlip(0.5),
             transforms.Normalize(mean=(0.558926, 0.42738813, 0.4077543),
                                  std=(0.24672212, 0.236501, 0.22921552)),
             transforms.ToTensor()
