@@ -1,5 +1,6 @@
-from MSD.settings.config import LABEL_FILE_TRAIN, LABEL_FILE_TEST
+from MSD.settings.config import LABEL_FILE_TRAIN
 
+from torchvision import transforms
 from scipy.io import loadmat
 from PIL import Image
 import numpy as np
@@ -7,25 +8,29 @@ import numpy as np
 
 class CarsDataset:
 
-    def __init__(self, path_list, dataset_type):
+    def __init__(self, path_list, use_transforms=True):
         """"
         label matrix structure:
         0-3 :   bounding boxes
         4   :   class_name
         5   :   file_name
         """
+        self.use_transforms = use_transforms
         self.image_paths = path_list
 
-        label_file = LABEL_FILE_TRAIN if dataset_type in ('train', 'valid') else LABEL_FILE_TEST
-        labels_list = loadmat(label_file)['annotations'].reshape(-1, 1)
-
-        if dataset_type in ('train', 'valid'):
-            label_dict = {labels_list[x][0][5][0]: labels_list[x][0][4][0][0] for x in range(len(labels_list))}
-        else:
-            #TODO too few values, no label
-            label_dict = {labels_list[x][0][4][0]: labels_list[x][0][3][0][0] for x in range(len(labels_list))}
+        # dict -> filename : class name
+        labels_list = loadmat(LABEL_FILE_TRAIN)['annotations'].reshape(-1, 1)
+        label_dict = {labels_list[x][0][5][0]: labels_list[x][0][4][0][0] for x in range(len(labels_list))}
 
         self.labels = [label_dict[x.split('\\')[-1]] for x in path_list]
+
+        self.transforms = transforms.Compose([
+            transforms.Resize(256),
+            transforms.CenterCrop(224),
+            transforms.Normalize(mean=(0.558926, 0.42738813, 0.4077543),
+                                 std=(0.24672212, 0.236501, 0.22921552)),
+            transforms.ToTensor()
+        ])
 
     def __len__(self):
         return len(self.image_paths)
@@ -35,8 +40,7 @@ class CarsDataset:
         label = self.labels[item]
 
         image = Image.open(image_path)
-        #im_tensor = self.transforms(image)
+        if self.use_transforms:
+            image = self.transforms(image)
 
         return image, label
-
-
