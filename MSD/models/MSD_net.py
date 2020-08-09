@@ -1,4 +1,4 @@
-from MSD.settings.config import NUM_CLASSES
+from MSD.settings.config import NUM_CLASSES, SCALE_CHANNELS
 
 import torch
 from torch import nn
@@ -15,21 +15,41 @@ class MSDnet(nn.Module):
         )
 
         # layer 1
-        self.h11_stride = Layer1Scale(in_ch=3, out_ch=6, stride=2, pad=1)
-        self.h21_stride = Layer1Scale(in_ch=6, out_ch=12, stride=2, pad=1)
+        self.h11_stride = Layer1Scale(in_ch=3,
+                                      out_ch=SCALE_CHANNELS['scale_1'], stride=2, pad=1)
+        self.h21_stride = Layer1Scale(in_ch=SCALE_CHANNELS['scale_1'],
+                                      out_ch=SCALE_CHANNELS['scale_2'], stride=2, pad=1)
 
-        # self.h11_regular = Layer1Scale(in_ch=3, out_ch=6, stride=1, pad=1)
-        # self.h21_regular = Layer1Scale(in_ch=6, out_ch=12, stride=1, pad=1)
-        self.h31_regular = Layer1Scale(in_ch=12, out_ch=24, stride=1, pad=1)
+        self.h11_regular = Layer1Scale(in_ch=3,
+                                       out_ch=SCALE_CHANNELS['scale_1'], stride=1, pad=1)
+        self.h21_regular = Layer1Scale(in_ch=SCALE_CHANNELS['scale_1'],
+                                       out_ch=SCALE_CHANNELS['scale_2'], stride=1, pad=1)
+        self.h31_regular = Layer1Scale(in_ch=SCALE_CHANNELS['scale_2'],
+                                       out_ch=SCALE_CHANNELS['scale_3'], stride=1, pad=1)
 
         # layer 2
-        # self.h12 = LayerNScale(in_ch=6, mid_ch=6, out_ch=6, stride=0)
-        # self.h22 = LayerNScale(in_ch=18, mid_ch=12, out_ch=12, stride=0)
-        # self.h32 = LayerNScale(in_ch=36, mid_ch=24, out_ch=24, stride=0)
+        # self.h12_stride = LayerNScale(in_ch=SCALE_CHANNELS['scale_1'],
+        #                               mid_ch=SCALE_CHANNELS['scale_1'],
+        #                               out_ch=SCALE_CHANNELS['scale_1'], stride=2, pad=1)
+        self.h22_stride = LayerNScale(in_ch=SCALE_CHANNELS['scale_1'] + SCALE_CHANNELS['scale_2'],
+                                      mid_ch=SCALE_CHANNELS['scale_2'],
+                                      out_ch=SCALE_CHANNELS['scale_2'], stride=2, pad=1)
+
+        # self.h12_regular = LayerNScale(in_ch=SCALE_CHANNELS['scale_1'],
+        #                                mid_ch=SCALE_CHANNELS['scale_1'],
+        #                                out_ch=SCALE_CHANNELS['scale_1'], stride=0, pad=1)
+        self.h22_regular = LayerNScale(in_ch=SCALE_CHANNELS['scale_1'] + SCALE_CHANNELS['scale_2'],
+                                       mid_ch=SCALE_CHANNELS['scale_2'],
+                                       out_ch=SCALE_CHANNELS['scale_2'], stride=0, pad=1)
+        self.h32_regular = LayerNScale(in_ch=SCALE_CHANNELS['scale_2'] + SCALE_CHANNELS['scale_3'],
+                                       mid_ch=SCALE_CHANNELS['scale_3'],
+                                       out_ch=SCALE_CHANNELS['scale_3'], stride=0, pad=1)
 
 
         # classifier after layer 2
-        self.classifier_l2 = Classifier(in_ch=36, mid_ch=36, out_ch=36)
+        self.classifier_l2 = Classifier(in_ch=SCALE_CHANNELS['scale_3'] + SCALE_CHANNELS['scale_2'],
+                                        mid_ch=SCALE_CHANNELS['scale_3'] + SCALE_CHANNELS['scale_2'],
+                                        out_ch=SCALE_CHANNELS['scale_3'] + SCALE_CHANNELS['scale_2'])
 
     def forward(self, x):
         x_reduced = self.initial_reduce(x)
@@ -63,18 +83,19 @@ class Layer1Scale(nn.Module):
 
 
 class LayerNScale(nn.Module):
-    def __init__(self, in_ch, mid_ch, out_ch, stride):
+    def __init__(self, in_ch, mid_ch, out_ch, stride, pad):
         super().__init__()
 
-        self.layer_n_conv1 = nn.Conv2d(in_channels=in_ch, out_channels=mid_ch, kernel_size=1)
+        self.layer_n_conv1 = nn.Conv2d(in_channels=in_ch, out_channels=mid_ch,
+                                       kernel_size=1, padding=pad)
         self.layer_n_bn1 = nn.BatchNorm2d(mid_ch)
         self.layer_n_relu1 = nn.ReLU()
-        self.layer_n_conv2 = nn.Conv2d(in_channels=mid_ch, out_channels=out_ch, kernel_size=3, stride=stride)
+        self.layer_n_conv2 = nn.Conv2d(in_channels=mid_ch, out_channels=out_ch,
+                                       kernel_size=3, stride=stride, padding=pad)
         self.layer_n_bn2 = nn.BatchNorm2d(out_ch)
         self.layer_n_relu2 = nn.ReLU()
 
     def forward(self, x):
-
         x = self.layer_n_conv1(x)
         x = self.layer_n_bn1(x)
         x = self.layer_n_relu1(x)
