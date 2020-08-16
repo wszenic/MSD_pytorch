@@ -1,4 +1,6 @@
-from MSD.settings.config import BATCH_SIZE, TRAIN_PERC, TRAIN_FOLDER, NEPTUNE_TOKEN, PREPROCESS_FOLDER
+from MSD.settings.config import BATCH_SIZE, TRAIN_PERC, TRAIN_FOLDER,\
+                                NEPTUNE_TOKEN, PREPROCESS_FOLDER,\
+                                DATASET_DESCRIPTION
 from MSD.data.dataparser import CarsDataset
 from MSD.models.MSD_net import MSDnet
 
@@ -6,6 +8,7 @@ import pytorch_lightning as pl
 from torch.utils.data import DataLoader
 from torch import nn
 import numpy as np
+import pandas as pd
 
 import torchvision
 from torchvision import transforms
@@ -76,9 +79,12 @@ class NeuralNetworkLearner(pl.LightningModule):
 
 
     def prepare_data(self):
-        file_paths = glob.glob(PREPROCESS_FOLDER + '//*.pt')
+        dataset_description = pd.read_csv(DATASET_DESCRIPTION)
 
-        train_paths, valid_paths = train_test_split(file_paths, test_size=TRAIN_PERC)
+        dataset_description = dataset_description[dataset_description.channels == 3]
+
+        train_paths = dataset_description[dataset_description.is_test == False].preprocess_path.to_list()
+        valid_paths = dataset_description[dataset_description.is_test == True].preprocess_path.to_list()
 
         self.train_dataset = CarsDataset(train_paths)
         self.val_dataset = CarsDataset(valid_paths)
@@ -100,7 +106,9 @@ class NeuralNetworkLearner(pl.LightningModule):
         return DataLoader(self.val_dataset, batch_size=self.batch_size, num_workers=6, pin_memory=True)
 
     def configure_optimizers(self):
-        optimizer = torch.optim.Adam(self.parameters(), lr=1e-4)
-        return optimizer
+
+        optimizer = torch.optim.Adam(self.parameters(), lr=0.1)
+        scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=100, gamma=0.1)
+        return [optimizer], [scheduler]
 
 
