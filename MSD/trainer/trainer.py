@@ -82,22 +82,15 @@ class NeuralNetworkLearner(pl.LightningModule):
         dataset_description = pd.read_csv(DATASET_DESCRIPTION)
 
         dataset_description = dataset_description[dataset_description.channels == 3]
+        dataset_description = dataset_description[dataset_description.is_test == 0]
 
-        train_paths = dataset_description[dataset_description.is_test == False].preprocess_path.to_list()
-        valid_paths = dataset_description[dataset_description.is_test == True].preprocess_path.to_list()
+        train_x, val_x, _, _ = train_test_split(dataset_description.full_path.tolist(),
+                                                dataset_description.class_id.tolist(), train_size=0.5,
+                                                stratify=dataset_description.class_id.tolist())
 
-        self.train_dataset = CarsDataset(train_paths)
-        self.val_dataset = CarsDataset(valid_paths)
-        # transform = transforms.Compose([
-        #     transforms.RandomHorizontalFlip(0.5),
-        #     transforms.ToTensor(),
-        #     transforms.Normalize(mean=(0.558926, 0.42738813, 0.4077543),
-        #                          std=(0.24672212, 0.236501, 0.22921552))
-        #                                 ])
-        #
-        #
-        # self.train_dataset = torchvision.datasets.CIFAR10('./', train=True, transform=transform, download=True)
-        # self.val_dataset = torchvision.datasets.CIFAR10('./', train=False, transform=transform, download=True)
+        self.train_dataset = CarsDataset(train_x)
+        self.val_dataset = CarsDataset(val_x)
+
 
     def train_dataloader(self):
         return DataLoader(self.train_dataset, batch_size=self.batch_size, num_workers=6, pin_memory=True)
