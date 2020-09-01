@@ -35,9 +35,7 @@ class MSDnet(nn.Module):
                                       mid_ch=SCALE_CHANNELS['scale_2'],
                                       out_ch=SCALE_CHANNELS['scale_2'], stride=2, pad=2)
 
-        # self.h12_regular = LayerNScale(in_ch=SCALE_CHANNELS['scale_1'],
-        #                                mid_ch=SCALE_CHANNELS['scale_1'],
-        #                                out_ch=SCALE_CHANNELS['scale_1'], stride=0, pad=1)
+        
         self.h22_regular = LayerNScale(in_ch=SCALE_CHANNELS['scale_1'] + SCALE_CHANNELS['scale_2'],
                                        mid_ch=SCALE_CHANNELS['scale_2'],
                                        out_ch=SCALE_CHANNELS['scale_2'], stride=1, pad=1)
@@ -118,7 +116,7 @@ class Layer1Scale(nn.Module):
         super().__init__()
 
         self.layer_1_conv = nn.Conv2d(in_channels=in_ch, out_channels=out_ch,
-                                      kernel_size=3, stride=stride, padding=pad)
+                                      kernel_size=3, stride=stride, padding=pad, bias=False)
         self.layer_1_bn = nn.BatchNorm2d(out_ch)
         self.layer_1_relu = nn.ReLU()
 
@@ -135,11 +133,11 @@ class LayerNScale(nn.Module):
         super().__init__()
 
         self.layer_n_conv1 = nn.Conv2d(in_channels=in_ch, out_channels=mid_ch,
-                                       kernel_size=1, padding=0)
+                                       kernel_size=1, padding=0, bias=False)
         self.layer_n_bn1 = nn.BatchNorm2d(mid_ch)
         self.layer_n_relu1 = nn.ReLU()
         self.layer_n_conv2 = nn.Conv2d(in_channels=mid_ch, out_channels=out_ch,
-                                       kernel_size=3, stride=stride, padding=1)
+                                       kernel_size=3, stride=stride, padding=1, bias=False)
         self.layer_n_bn2 = nn.BatchNorm2d(out_ch)
         self.layer_n_relu2 = nn.ReLU()
 
