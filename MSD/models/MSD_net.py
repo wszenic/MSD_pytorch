@@ -72,50 +72,32 @@ class MSDnet(nn.Module):
 
     def forward(self, x):
         x_reduced = self.initial_reduce(x)
-        # x_reduced = x
-        # print(f'x_reduced shape: {x_reduced.shape}')
+        
         # layer 1
         h11_s_out = self.h11_stride(x_reduced)
-        # print(f'h11_s_out shape: {h11_s_out.shape}')
 
         h11_r_out = self.h11_regular(x_reduced)
-        # print(f'h11_r_out shape: {h11_r_out.shape}')
         h21_s_out = self.h21_stride(h11_s_out)
-        # print(f'h21_s_out shape: {h21_s_out.shape}')
 
         h21_r_out = self.h21_regular(h11_s_out)
-        # print(f'h21_r_out shape: {h21_r_out.shape}')
         h31_r_out = self.h31_regular(h21_s_out)
-        # print(f'h31_r_out shape: {h31_r_out.shape}')
 
-        # print('-'*20)
         # layer 2
         h12_s_out = self.h12_stride(h11_r_out)
-        # print(f'h12_s_out shape: {h12_s_out.shape}')
 
         h22_in = torch.cat((h11_s_out, h21_r_out), dim=1)
-        # print(f'h22_in shape: {h22_in.shape}')
         h22_s_out = self.h22_stride(h22_in)
-        # print(f'h22_s_out shape: {h22_s_out.shape}')
         h22_r_out = self.h22_regular(h22_in)
-        # print(f'h22_r_out shape: {h22_r_out.shape}')
 
         h32_in = torch.cat((h21_s_out, h31_r_out), dim=1)
-        # print(f'h32_in shape: {h32_in.shape}')
         h32_r_out = self.h32_regular(h32_in)
-        # print(f'h32_r_out shape: {h32_r_out.shape}')
 
         # layer 3
-        # print('-'*20)
         h23_in = torch.cat((h21_r_out, h22_r_out), dim=1)
-        # print(f'h23_in shape: {h23_in.shape}')
         h23_s_out = self.h23_stride(h23_in)
-        # print(f'h23_s_out shape: {h23_s_out.shape}')
 
         h33_in = torch.cat((h31_r_out, h32_r_out), dim=1)
-        # print(f'h33_in shape: {h33_in.shape}')
         h33_r_out = self.h33_regular(h33_in)
-        # print(f'h33_r_out shape: {h33_r_out.shape}')
 
         #layer 4 <- virtual, as only serves as classifier input
         h41_in = torch.cat((h33_in, h33_r_out), dim=1)
@@ -187,10 +169,7 @@ class Classifier(nn.Module):
         x = self.classifier_conv1(x)
         x = self.classifier_conv2(x)
         x = self.classifier_avgpool(x)
-        # print(f'x shape: {x.shape}')
         x = x.view(x.shape[0], -1)
-        # print(f'x shape: {x.shape}')
         x = self.dense(x)
-        # print(f'x shape: {x.shape}')
 
         return x
