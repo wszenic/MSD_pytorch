@@ -1,6 +1,7 @@
-from MSD.settings.config import LABEL_FILE_TRAIN, TRAIN_FOLDER
+from MSD.settings.config import LABEL_FILE_TRAIN, TRAIN_FOLDER, DATASET_DESCRIPTION,\
+                                IMAGE_COLOUR_MODE
 
-from torchvision import transforms
+import pandas as pd
 from scipy.io import loadmat
 from PIL import Image
 import torch
@@ -8,31 +9,23 @@ import torch
 
 class CarsDataset:
 
-    def __init__(self, path_list, use_transforms=True):
-        """"
-        label matrix structure:
-        0-3 :   bounding boxes
-        4   :   class_name
-        5   :   file_name
-        """
-        self.use_transforms = use_transforms
+    def __init__(self, path_list, transforms):
+        self.transforms = transforms
         self.image_paths = path_list
 
-        # dict -> filename : class name
-        labels_list = loadmat(LABEL_FILE_TRAIN)['annotations'].reshape(-1, 1)
-        label_dict = {labels_list[x][0][5][0].split('.')[0]: labels_list[x][0][4][0][0] for x in range(len(labels_list))}
+        labels_df = pd.read_csv(DATASET_DESCRIPTION)
+        labels_df = labels_df[['full_path', 'class_id']]
+        labels_df = labels_df.set_index('full_path')
+        label_dict = labels_df.to_dict('index')
 
-        self.labels = [label_dict[x.split('/')[-1].split('.')[0]] for x in path_list]
-
-        self.transforms = transforms.Compose([
-            transforms.RandomHorizontalFlip(0.5),
-        ])
+        self.labels = [label_dict[x]['class_id'] - 1 for x in self.image_paths]
 
     def __len__(self):
         return len(self.image_paths)
 
     def __getitem__(self, item):
-        image_tensor = torch.load(self.image_paths[item])
+        img = Image.open(self.image_paths[item]).convert(IMAGE_COLOUR_MODE)
+        image_tensor = self.transforms(img)
         label = torch.tensor(self.labels[item], dtype=torch.long)
 
         return image_tensor, label
