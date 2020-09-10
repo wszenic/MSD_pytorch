@@ -91,7 +91,8 @@ class MSDnet(nn.Module):
         h22_s_out = self.h22_stride(h22_in)
         h22_r_out = self.h22_regular(h22_in)
 
-        h32_in = torch.cat((h21_s_out, h31_r_out), dim=1)
+        h32_in = torch.cat((h31_r_out,
+                            h21_s_out), dim=1)
         h32_r_out = self.h32_regular(h32_in)
 
         # layer 3
@@ -104,7 +105,7 @@ class MSDnet(nn.Module):
         h33_r_out = self.h33_regular(h33_in)
 
         #layer 4 <- virtual, as only serves as classifier input
-        h43_in = torch.cat((h33_in, h33_r_out,
+        h43_in = torch.cat((h31_r_out, h32_r_out, h33_r_out,
                             h21_s_out, h22_s_out, h23_s_out), dim=1)
 
         #classifiers
