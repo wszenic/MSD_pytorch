@@ -1,13 +1,7 @@
-<<<<<<< HEAD
 from MSD.settings.config import BATCH_SIZE, TRAIN_PERC, TRAIN_FOLDER, NEPTUNE_TOKEN, PREPROCESS_FOLDER, \
     DATASET_DESCRIPTION, MAX_EPOCH, SCALE_CHANNELS, TRAIN_PERC, LEARNING_RATE, CLASSIFIER_SCALES, \
     USE_SCHEDULER, OPTIMIZER_STEP_SIZE, OPTIMIZER_GAMMA, IMAGE_COLOUR_MODE
 
-=======
-from MSD.settings.config import BATCH_SIZE, TRAIN_PERC, TRAIN_FOLDER,\
-                                NEPTUNE_TOKEN, PREPROCESS_FOLDER,\
-                                DATASET_DESCRIPTION
->>>>>>> f0477cfe305cbd62361a4f08bd409ee4d6329c2a
 from MSD.data.dataparser import CarsDataset
 from MSD.models.MSD_net import MSDnet
 
@@ -148,19 +142,11 @@ class NeuralNetworkLearner(pl.LightningModule):
         dataset_description = dataset_description[dataset_description.is_test == 0]
 
         train_x, val_x, _, _ = train_test_split(dataset_description.full_path.tolist(),
-<<<<<<< HEAD
                                                 dataset_description.class_id.tolist(), train_size=TRAIN_PERC,
                                                 stratify=dataset_description.class_id.tolist())
 
         self.train_dataset = CarsDataset(train_x, transforms=self.train_transforms)
         self.val_dataset = CarsDataset(val_x, transforms=self.val_transforms)
-=======
-                                                dataset_description.class_id.tolist(), train_size=0.5,
-                                                stratify=dataset_description.class_id.tolist())
-
-        self.train_dataset = CarsDataset(train_x)
-        self.val_dataset = CarsDataset(val_x)
->>>>>>> f0477cfe305cbd62361a4f08bd409ee4d6329c2a
 
 
     def train_dataloader(self):
@@ -170,19 +156,11 @@ class NeuralNetworkLearner(pl.LightningModule):
         return DataLoader(self.val_dataset, batch_size=self.batch_size, num_workers=6, pin_memory=True)
 
     def configure_optimizers(self):
-
-<<<<<<< HEAD
-        #optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
         optimizer = torch.optim.SGD(self.parameters(), lr=self.learning_rate, weight_decay=10e-4, momentum=0.9, nesterov=True)
         if USE_SCHEDULER:
             scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=OPTIMIZER_STEP_SIZE, gamma=OPTIMIZER_GAMMA)
             return [optimizer], [scheduler]
         else:
             return optimizer
-=======
-        optimizer = torch.optim.Adam(self.parameters(), lr=0.1)
-        scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=100, gamma=0.1)
-        return [optimizer], [scheduler]
->>>>>>> f0477cfe305cbd62361a4f08bd409ee4d6329c2a
 
 
