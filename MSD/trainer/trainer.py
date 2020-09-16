@@ -138,7 +138,6 @@ class NeuralNetworkLearner(pl.LightningModule):
     def prepare_data(self):
         dataset_description = pd.read_csv(DATASET_DESCRIPTION)
 
-        dataset_description = dataset_description[dataset_description.channels == 3]
         dataset_description = dataset_description[dataset_description.is_test == 0]
 
         train_x, val_x, _, _ = train_test_split(dataset_description.full_path.tolist(),
