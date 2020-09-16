@@ -1,4 +1,4 @@
-from MSD.settings.config import NUM_CLASSES, SCALE_CHANNELS
+from MSD.settings.config import NUM_CLASSES, SCALE_CHANNELS, IMAGE_COLOUR_MODE
 
 import torch
 from torch import nn
@@ -8,9 +8,9 @@ class MSDnet(nn.Module):
 
     def __init__(self):
         super().__init__()
-
+        in_size = 1 if IMAGE_COLOUR_MODE == 'L' else 3
         self.initial_reduce = nn.Sequential(
-            nn.Conv2d(in_channels=3, out_channels=3, kernel_size=7, stride=2),
+            nn.Conv2d(in_channels=in_size, out_channels=3, kernel_size=7, stride=2),
             nn.MaxPool2d(kernel_size=3, stride=2)
         )
 
