@@ -18,7 +18,7 @@ class CarsDataset:
         labels_df = labels_df.set_index('full_path')
         label_dict = labels_df.to_dict('index')
 
-        self.labels = [label_dict[x]['class_id'] - 1 for x in self.image_paths]
+        self.labels = [label_dict[x]['class_id'] for x in self.image_paths]
 
     def __len__(self):
         return len(self.image_paths)
