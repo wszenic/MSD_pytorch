@@ -97,11 +97,13 @@ class MSDnet(nn.Module):
 
 
         # classifiers
-        self.classifier_l2 = Classifier(in_ch=SCALE_CHANNELS['scale_3']*2)
+        classifier_scale = SCALE_CHANNELS['scale_4'] * 2 if USE_IMAGENET_SCALES else SCALE_CHANNELS['scale_3'] * 2
 
-        self.classifier_l3 = Classifier(in_ch=SCALE_CHANNELS['scale_3']*2)
+        self.classifier_l2 = Classifier(in_ch=classifier_scale)
 
-        self.classifier_l4 = Classifier(in_ch=SCALE_CHANNELS['scale_3']*2)
+        self.classifier_l3 = Classifier(in_ch=classifier_scale)
+
+        self.classifier_l4 = Classifier(in_ch=classifier_scale)
 
 
     def forward(self, x):
