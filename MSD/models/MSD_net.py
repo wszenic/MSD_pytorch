@@ -87,17 +87,18 @@ class MSDnet(nn.Module):
 
         # layer 1
         x_1_1 = self.h11_regular(x_reduced)
+        print(f"x11 shape: {x_1_1.shape}")
 
         x_2_1 = self.h21_stride(x_1_1)
+        print(f"x21 shape: {x_2_1.shape}")
 
         x_3_1 = self.h31_stride(x_2_1)
+        #print(f"x31 shape: {x_1_1.shape}")
 
         # layer 2
         x_1_2 = self.h12_regular(x_1_1)
 
-        print(x_1_1.shape)
-        print(x_2_1.shape)
-        exit()
+        quit()
 
         x_2_2 = torch.cat((
             self.h22_stride(x_1_1),
