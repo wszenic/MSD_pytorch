@@ -98,6 +98,9 @@ class MSDnet(nn.Module):
         # layer 2
         x_1_2 = self.h12_regular(x_1_1)
 
+        print(f"x22 stride shape: {self.h22_stride(x_1_1).shape}")
+        print(f"x22 regular shape: {self.h22_stride(x_1_1).shape}")
+
         quit()
 
         x_2_2 = torch.cat((
