@@ -46,7 +46,7 @@ class MSDnet(nn.Module):
         self.h23_stride = LayerNScale(in_ch=SCALE_CHANNELS['scale_1']*2,
                                       mid_ch=SCALE_CHANNELS['scale_2'],
                                       out_ch=SCALE_CHANNELS['scale_2'], stride=2, pad=2)
-        self.h23_regular = LayerNScale(in_ch=SCALE_CHANNELS['scale_2']*2,
+        self.h23_regular = LayerNScale(in_ch=SCALE_CHANNELS['scale_2']*3,
                                       mid_ch=SCALE_CHANNELS['scale_2'],
                                       out_ch=SCALE_CHANNELS['scale_2'], stride=1, pad=1)
 
