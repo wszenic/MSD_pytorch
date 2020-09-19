@@ -1,4 +1,4 @@
-from MSD.settings.config import BATCH_SIZE, TRAIN_PERC, NEPTUNE_TOKEN, \
+from MSD.settings.config import BATCH_SIZE, TRAIN_PERC, NEPTUNE_TOKEN, CLASSIFIER, \
     DATASET_DESCRIPTION, MAX_EPOCH, SCALE_CHANNELS, TRAIN_PERC, LEARNING_RATE,\
     USE_SCHEDULER, OPTIMIZER_STEP_SIZE, OPTIMIZER_GAMMA, IMAGE_COLOUR_MODE, OPTIMIZER_TYPE, WEIGHT_DECAY
 
@@ -59,6 +59,7 @@ class NeuralNetworkLearner(pl.LightningModule):
 
         params = {'max epoch': MAX_EPOCH,
                   'channel scales': SCALE_CHANNELS,
+                  'classifier scales': CLASSIFIER,
                   'learning rate': LEARNING_RATE,
                   'training percentage': TRAIN_PERC,
                   'scheduler': USE_SCHEDULER,

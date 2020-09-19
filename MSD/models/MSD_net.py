@@ -1,4 +1,4 @@
-from MSD.settings.config import NUM_CLASSES, SCALE_CHANNELS, IMAGE_COLOUR_MODE, USE_IMAGENET_SCALES
+from MSD.settings.config import NUM_CLASSES, SCALE_CHANNELS, IMAGE_COLOUR_MODE, USE_IMAGENET_SCALES, CLASSIFIER
 
 import torch
 from torch import nn
@@ -97,17 +97,11 @@ class MSDnet(nn.Module):
 
 
         # classifiers
-        self.classifier_l2 = Classifier(in_ch=SCALE_CHANNELS['scale_3']*2,
-                                        mid_ch=128,
-                                        out_ch=128)
+        self.classifier_l2 = Classifier(in_ch=SCALE_CHANNELS['scale_3']*2)
 
-        self.classifier_l3 = Classifier(in_ch=SCALE_CHANNELS['scale_3']*2,
-                                        mid_ch=128,
-                                        out_ch=128)
+        self.classifier_l3 = Classifier(in_ch=SCALE_CHANNELS['scale_3']*2)
 
-        self.classifier_l4 = Classifier(in_ch=SCALE_CHANNELS['scale_3']*2,
-                                        mid_ch=128,
-                                        out_ch=128)
+        self.classifier_l4 = Classifier(in_ch=SCALE_CHANNELS['scale_3']*2)
 
 
     def forward(self, x):
@@ -230,18 +224,18 @@ class LayerNScale(nn.Module):
 
 
 class Classifier(nn.Module):
-    def __init__(self, in_ch, mid_ch, out_ch):
+    def __init__(self, in_ch):
         super().__init__()
 
-        self.classifier_conv1 = nn.Conv2d(in_ch, mid_ch, kernel_size=3, padding=0)
-        self.classifier_bn1 = nn.BatchNorm2d(mid_ch)
-        self.classifier_relu1 = nn.ReLU(mid_ch)
-        self.classifier_conv2 = nn.Conv2d(mid_ch, out_ch, kernel_size=3, padding=0)
-        self.classifier_bn2 = nn.BatchNorm2d(mid_ch)
-        self.classifier_relu2 = nn.ReLU(mid_ch)
+        self.classifier_conv1 = nn.Conv2d(in_ch, CLASSIFIER['scale_mid'], kernel_size=3, padding=0)
+        self.classifier_bn1 = nn.BatchNorm2d(CLASSIFIER['scale_mid'])
+        self.classifier_relu1 = nn.ReLU(CLASSIFIER['scale_mid'])
+        self.classifier_conv2 = nn.Conv2d(CLASSIFIER['scale_mid'], CLASSIFIER['scale_out'], kernel_size=3, padding=0)
+        self.classifier_bn2 = nn.BatchNorm2d(CLASSIFIER['scale_mid'])
+        self.classifier_relu2 = nn.ReLU(CLASSIFIER['scale_mid'])
         self.classifier_avgpool = nn.AvgPool2d(kernel_size=2)
 
-        self.dense = nn.Linear(out_ch * 5**2,
+        self.dense = nn.Linear(CLASSIFIER['scale_out'] * 5**2,
                                NUM_CLASSES)
 
     def forward(self, x):
