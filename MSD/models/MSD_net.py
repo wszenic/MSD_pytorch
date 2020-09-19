@@ -240,7 +240,7 @@ class Classifier(nn.Module):
         self.classifier_conv2 = nn.Conv2d(mid_ch, out_ch, kernel_size=3, padding=0)
         self.classifier_bn1 = nn.BatchNorm2d(mid_ch),
         self.classifier_relu1 = nn.ReLU(mid_ch)
-        self.classifier_avgpool = nn.AvgPool2d(3)
+        self.classifier_avgpool = nn.AvgPool2d(kernel_size=2)
 
         self.dense = nn.Linear(out_ch * in_shape**2,
                                NUM_CLASSES)
