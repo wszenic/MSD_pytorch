@@ -1,6 +1,6 @@
 from MSD.settings.config import BATCH_SIZE, TRAIN_PERC, NEPTUNE_TOKEN, \
     DATASET_DESCRIPTION, MAX_EPOCH, SCALE_CHANNELS, TRAIN_PERC, LEARNING_RATE, CLASSIFIER_SCALES, \
-    USE_SCHEDULER, OPTIMIZER_STEP_SIZE, OPTIMIZER_GAMMA, IMAGE_COLOUR_MODE
+    USE_SCHEDULER, OPTIMIZER_STEP_SIZE, OPTIMIZER_GAMMA, IMAGE_COLOUR_MODE, OPTIMIZER_TYPE
 
 from MSD.data.dataparser import CarsDataset
 from MSD.models.MSD_net import MSDnet
@@ -20,6 +20,7 @@ import glob
 import torch
 
 import neptune
+
 
 class NeuralNetworkLearner(pl.LightningModule):
 
@@ -42,9 +43,9 @@ class NeuralNetworkLearner(pl.LightningModule):
         self.train_transforms = transforms.Compose([
             transforms.Resize(256),
             transforms.CenterCrop(224),
-            #transforms.RandomAffine(25, translate=(0.1, 0.1), scale=(0.9, 0.1), shear=8),
+            # transforms.RandomAffine(25, translate=(0.1, 0.1), scale=(0.9, 0.1), shear=8),
             transforms.ToTensor(),
-            #transforms.RandomErasing(p=0.5, scale=(0.02, 0.25)),
+            # transforms.RandomErasing(p=0.5, scale=(0.02, 0.25)),
             normalization,
             transforms.RandomHorizontalFlip(0.5)
         ])
@@ -56,13 +57,13 @@ class NeuralNetworkLearner(pl.LightningModule):
             normalization
         ])
 
-
         params = {'max epoch': MAX_EPOCH,
                   'channel scales': SCALE_CHANNELS,
                   'learning rate': LEARNING_RATE,
                   'classifier scale': CLASSIFIER_SCALES['out_ch'],
                   'training percentage': TRAIN_PERC,
                   'scheduler': USE_SCHEDULER,
+                  'optimizer type': OPTIMIZER_TYPE,
                   'optimizer step size': OPTIMIZER_STEP_SIZE,
                   'optimizer gamma': OPTIMIZER_GAMMA,
                   'image colour mode (RGB / L)': IMAGE_COLOUR_MODE
@@ -134,7 +135,6 @@ class NeuralNetworkLearner(pl.LightningModule):
 
         return {'val_loss': avg_loss}
 
-
     def prepare_data(self):
         dataset_description = pd.read_csv(DATASET_DESCRIPTION)
 
@@ -147,7 +147,6 @@ class NeuralNetworkLearner(pl.LightningModule):
         self.train_dataset = CarsDataset(train_x, transforms=self.train_transforms)
         self.val_dataset = CarsDataset(val_x, transforms=self.val_transforms)
 
-
     def train_dataloader(self):
         return DataLoader(self.train_dataset, batch_size=self.batch_size, shuffle=True, num_workers=6, pin_memory=True)
 
@@ -155,11 +154,14 @@ class NeuralNetworkLearner(pl.LightningModule):
         return DataLoader(self.val_dataset, batch_size=self.batch_size, num_workers=6, pin_memory=True)
 
     def configure_optimizers(self):
-        optimizer = torch.optim.SGD(self.parameters(), lr=self.learning_rate, weight_decay=10e-4, momentum=0.9, nesterov=True)
+        if OPTIMIZER_TYPE == 'SGD':
+            optimizer = torch.optim.SGD(self.parameters(), lr=self.learning_rate, weight_decay=10e-4, momentum=0.9,
+                                        nesterov=True)
+        else:
+            optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
+
         if USE_SCHEDULER:
             scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=OPTIMIZER_STEP_SIZE, gamma=OPTIMIZER_GAMMA)
             return [optimizer], [scheduler]
         else:
             return optimizer
-
-
