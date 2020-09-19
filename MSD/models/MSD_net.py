@@ -237,7 +237,9 @@ class Classifier(nn.Module):
         self.classifier_relu2 = nn.ReLU(CLASSIFIER['scale_out'])
         self.classifier_avgpool = nn.AvgPool2d(kernel_size=2)
 
-        self.dense = nn.Linear(CLASSIFIER['scale_out'] * 5**2,
+        in_shape = 2 if USE_IMAGENET_SCALES else 5
+
+        self.dense = nn.Linear(CLASSIFIER['scale_out'] * in_shape**2,
                                NUM_CLASSES)
 
     def forward(self, x):
@@ -248,7 +250,6 @@ class Classifier(nn.Module):
         x = self.classifier_bn2(x)
         x = self.classifier_relu2(x)
         x = self.classifier_avgpool(x)
-        print(f"dense input shape: {x.shape}")
         x = x.view(x.shape[0], -1)
         x = self.dense(x)
 
