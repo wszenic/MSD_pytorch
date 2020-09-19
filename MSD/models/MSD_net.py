@@ -235,10 +235,10 @@ class Classifier(nn.Module):
         super().__init__()
 
         self.classifier_conv1 = nn.Conv2d(in_ch, mid_ch, kernel_size=3, padding=0)
-        self.classifier_bn1 = nn.BatchNorm2d(mid_ch),
+        self.classifier_bn1 = nn.BatchNorm2d(mid_ch)
         self.classifier_relu1 = nn.ReLU(mid_ch)
         self.classifier_conv2 = nn.Conv2d(mid_ch, out_ch, kernel_size=3, padding=0)
-        self.classifier_bn2 = nn.BatchNorm2d(mid_ch),
+        self.classifier_bn2 = nn.BatchNorm2d(mid_ch)
         self.classifier_relu2 = nn.ReLU(mid_ch)
         self.classifier_avgpool = nn.AvgPool2d(kernel_size=2)
 
