@@ -95,6 +95,10 @@ class MSDnet(nn.Module):
         # layer 2
         x_1_2 = self.h12_regular(x_1_1)
 
+        print(x_1_1.shape)
+        print(x_2_1.shape)
+        exit()
+
         x_2_2 = torch.cat((
             self.h22_stride(x_1_1),
             self.h22_regular(x_2_1)
