@@ -50,10 +50,10 @@ class MSDnet(nn.Module):
                                       mid_ch=SCALE_CHANNELS['scale_2'],
                                       out_ch=SCALE_CHANNELS['scale_2'], stride=1, pad=1)
 
-        self.h33_stride = LayerNScale(in_ch=SCALE_CHANNELS['scale_2']*2,
+        self.h33_stride = LayerNScale(in_ch=SCALE_CHANNELS['scale_2']*3,
                                       mid_ch=SCALE_CHANNELS['scale_3'],
                                       out_ch=SCALE_CHANNELS['scale_3'], stride=2, pad=2)
-        self.h33_regular = LayerNScale(in_ch=SCALE_CHANNELS['scale_3']*2,
+        self.h33_regular = LayerNScale(in_ch=SCALE_CHANNELS['scale_3']*3,
                                       mid_ch=SCALE_CHANNELS['scale_3'],
                                       out_ch=SCALE_CHANNELS['scale_3'], stride=1, pad=1)
 
