@@ -238,8 +238,8 @@ class Classifier(nn.Module):
         self.classifier_bn1 = nn.BatchNorm2d(mid_ch),
         self.classifier_relu1 = nn.ReLU(mid_ch)
         self.classifier_conv2 = nn.Conv2d(mid_ch, out_ch, kernel_size=3, padding=0)
-        self.classifier_bn1 = nn.BatchNorm2d(mid_ch),
-        self.classifier_relu1 = nn.ReLU(mid_ch)
+        self.classifier_bn2 = nn.BatchNorm2d(mid_ch),
+        self.classifier_relu2 = nn.ReLU(mid_ch)
         self.classifier_avgpool = nn.AvgPool2d(kernel_size=2)
 
         self.dense = nn.Linear(out_ch * in_shape**2,
@@ -247,8 +247,13 @@ class Classifier(nn.Module):
 
     def forward(self, x):
         x = self.classifier_conv1(x)
+        x = self.classifier_bn1(x)
+        x = self.classifier_relu1(x)
         x = self.classifier_conv2(x)
+        x = self.classifier_bn2(x)
+        x = self.classifier_relu2(x)
         x = self.classifier_avgpool(x)
+        print(f"x shape: {x.shape}")
         x = x.view(x.shape[0], -1)
         x = self.dense(x)
 
