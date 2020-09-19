@@ -1,6 +1,6 @@
 from MSD.settings.config import BATCH_SIZE, TRAIN_PERC, NEPTUNE_TOKEN, \
     DATASET_DESCRIPTION, MAX_EPOCH, SCALE_CHANNELS, TRAIN_PERC, LEARNING_RATE,\
-    USE_SCHEDULER, OPTIMIZER_STEP_SIZE, OPTIMIZER_GAMMA, IMAGE_COLOUR_MODE, OPTIMIZER_TYPE
+    USE_SCHEDULER, OPTIMIZER_STEP_SIZE, OPTIMIZER_GAMMA, IMAGE_COLOUR_MODE, OPTIMIZER_TYPE, WEIGHT_DECAY
 
 from MSD.data.dataparser import CarsDataset
 from MSD.models.MSD_net import MSDnet
@@ -43,9 +43,9 @@ class NeuralNetworkLearner(pl.LightningModule):
         self.train_transforms = transforms.Compose([
             transforms.Resize(256),
             transforms.CenterCrop(224),
-            # transforms.RandomAffine(25, translate=(0.1, 0.1), scale=(0.9, 0.1), shear=8),
+            transforms.RandomAffine(25, translate=(0.1, 0.1), scale=(0.9, 0.1), shear=8),
             transforms.ToTensor(),
-            # transforms.RandomErasing(p=0.5, scale=(0.02, 0.25)),
+            transforms.RandomErasing(p=0.5, scale=(0.02, 0.25)),
             normalization,
             transforms.RandomHorizontalFlip(0.5)
         ])
@@ -65,6 +65,7 @@ class NeuralNetworkLearner(pl.LightningModule):
                   'optimizer type': OPTIMIZER_TYPE,
                   'optimizer step size': OPTIMIZER_STEP_SIZE,
                   'optimizer gamma': OPTIMIZER_GAMMA,
+                  'weight decay': WEIGHT_DECAY,
                   'image colour mode (RGB / L)': IMAGE_COLOUR_MODE
                   }
 
@@ -157,7 +158,7 @@ class NeuralNetworkLearner(pl.LightningModule):
             optimizer = torch.optim.SGD(self.parameters(), lr=self.learning_rate, weight_decay=10e-4, momentum=0.9,
                                         nesterov=True)
         else:
-            optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
+            optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate, weight_decay=WEIGHT_DECAY)
 
         if USE_SCHEDULER:
             scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=OPTIMIZER_STEP_SIZE, gamma=OPTIMIZER_GAMMA)
