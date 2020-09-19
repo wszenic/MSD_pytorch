@@ -73,11 +73,11 @@ class MSDnet(nn.Module):
                                         out_ch=128,
                                         in_shape=3)
 
-        self.classifier_l3 = Classifier(in_ch=SCALE_CHANNELS['scale_3']*4,
+        self.classifier_l3 = Classifier(in_ch=SCALE_CHANNELS['scale_3']*2,
                                         mid_ch=128,
                                         out_ch=128, in_shape=3)
 
-        self.classifier_l4 = Classifier(in_ch=SCALE_CHANNELS['scale_3']*6,
+        self.classifier_l4 = Classifier(in_ch=SCALE_CHANNELS['scale_3']*2,
                                         mid_ch=128,
                                         out_ch=128, in_shape=3)
 
@@ -95,9 +95,6 @@ class MSDnet(nn.Module):
         # layer 2
         x_1_2 = self.h12_regular(x_1_1)
 
-        print(f"h22 stride shape: {self.h22_stride(x_1_1).shape}")
-        print(f"h22 regular shape: {self.h22_regular(x_2_1).shape}")
-        # got 27 and 28
         x_2_2 = torch.cat((
             self.h22_stride(x_1_1),
             self.h22_regular(x_2_1)
