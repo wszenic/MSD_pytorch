@@ -166,7 +166,7 @@ class LayerNScale(nn.Module):
         self.layer_n_bn1 = nn.BatchNorm2d(mid_ch)
         self.layer_n_relu1 = nn.ReLU()
         self.layer_n_conv2 = nn.Conv2d(in_channels=mid_ch, out_channels=out_ch,
-                                       kernel_size=3, stride=stride, padding=1, bias=False)
+                                       kernel_size=3, stride=stride, padding=pad, bias=False)
         self.layer_n_bn2 = nn.BatchNorm2d(out_ch)
         self.layer_n_relu2 = nn.ReLU()
 
