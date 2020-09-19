@@ -37,15 +37,15 @@ class NeuralNetworkLearner(pl.LightningModule):
             normalization = transforms.Normalize(mean=(0.558926, 0.42738813, 0.4077543),
                                                  std=(0.24672212, 0.236501, 0.22921552))
         else:
-            normalization = transforms.Normalize(mean=0.4646894,
-                                                 std=0.23)
+            normalization = transforms.Normalize(mean=1,
+                                                 std=1)
 
         self.train_transforms = transforms.Compose([
             transforms.Resize(256),
             transforms.CenterCrop(224),
-            transforms.RandomAffine(25, translate=(0.1, 0.1), scale=(0.9, 0.1), shear=8),
+            #transforms.RandomAffine(25, translate=(0.1, 0.1), scale=(0.9, 0.1), shear=8),
             transforms.ToTensor(),
-            transforms.RandomErasing(p=0.5, scale=(0.02, 0.25)),
+            #transforms.RandomErasing(p=0.5, scale=(0.02, 0.25)),
             normalization,
             transforms.RandomHorizontalFlip(0.5)
         ])

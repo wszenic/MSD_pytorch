@@ -1,4 +1,4 @@
-from MSD.settings.config import NUM_CLASSES, SCALE_CHANNELS, IMAGE_COLOUR_MODE
+from MSD.settings.config import NUM_CLASSES, SCALE_CHANNELS, IMAGE_COLOUR_MODE, USE_IMAGENET_SCALES
 
 import torch
 from torch import nn
@@ -24,6 +24,10 @@ class MSDnet(nn.Module):
         self.h31_stride = Layer1Scale(in_ch=SCALE_CHANNELS['scale_2'],
                                       out_ch=SCALE_CHANNELS['scale_3'], stride=2, pad=2)
 
+        if USE_IMAGENET_SCALES:
+            self.h41_stride = Layer1Scale(in_ch=SCALE_CHANNELS['scale_3'],
+                                          out_ch=SCALE_CHANNELS['scale_4'], stride=2, pad=2)
+
         # layer 2
         self.h12_regular = LayerNScale(in_ch=SCALE_CHANNELS['scale_1'],
                                        mid_ch=SCALE_CHANNELS['scale_1'],
@@ -42,6 +46,15 @@ class MSDnet(nn.Module):
         self.h32_regular = LayerNScale(in_ch=SCALE_CHANNELS['scale_3'],
                                        mid_ch=SCALE_CHANNELS['scale_3'],
                                        out_ch=SCALE_CHANNELS['scale_3'], stride=1, pad=1)
+
+        if USE_IMAGENET_SCALES:
+            self.h42_stride = LayerNScale(in_ch=SCALE_CHANNELS['scale_3'],
+                                          mid_ch=SCALE_CHANNELS['scale_4'],
+                                          out_ch=SCALE_CHANNELS['scale_4'], stride=2, pad=2)
+            self.h42_regular = LayerNScale(in_ch=SCALE_CHANNELS['scale_4'],
+                                           mid_ch=SCALE_CHANNELS['scale_4'],
+                                           out_ch=SCALE_CHANNELS['scale_4'], stride=1, pad=1)
+
         # layer 3
         self.h23_stride = LayerNScale(in_ch=SCALE_CHANNELS['scale_1']*2,
                                       mid_ch=SCALE_CHANNELS['scale_2'],
@@ -57,6 +70,14 @@ class MSDnet(nn.Module):
                                       mid_ch=SCALE_CHANNELS['scale_3'],
                                       out_ch=SCALE_CHANNELS['scale_3'], stride=1, pad=1)
 
+        if USE_IMAGENET_SCALES:
+            self.h43_stride = LayerNScale(in_ch=SCALE_CHANNELS['scale_3']*3,
+                                          mid_ch=SCALE_CHANNELS['scale_4'],
+                                          out_ch=SCALE_CHANNELS['scale_4'], stride=2, pad=2)
+            self.h43_regular = LayerNScale(in_ch=SCALE_CHANNELS['scale_4']*3,
+                                           mid_ch=SCALE_CHANNELS['scale_4'],
+                                           out_ch=SCALE_CHANNELS['scale_4'], stride=1, pad=1)
+
         # layer 4
         self.h34_stride = LayerNScale(in_ch=SCALE_CHANNELS['scale_2']*5,
                                       mid_ch=SCALE_CHANNELS['scale_3'],
@@ -65,6 +86,14 @@ class MSDnet(nn.Module):
         self.h34_regular = LayerNScale(in_ch=SCALE_CHANNELS['scale_3']*5,
                                       mid_ch=SCALE_CHANNELS['scale_3'],
                                       out_ch=SCALE_CHANNELS['scale_3'], stride=1, pad=1)
+
+        if USE_IMAGENET_SCALES:
+            self.h44_stride = LayerNScale(in_ch=SCALE_CHANNELS['scale_3']*5,
+                                          mid_ch=SCALE_CHANNELS['scale_4'],
+                                          out_ch=SCALE_CHANNELS['scale_4'], stride=2, pad=2)
+            self.h44_regular = LayerNScale(in_ch=SCALE_CHANNELS['scale_4']*5,
+                                           mid_ch=SCALE_CHANNELS['scale_4'],
+                                           out_ch=SCALE_CHANNELS['scale_4'], stride=1, pad=1)
 
 
         # classifiers
@@ -92,6 +121,9 @@ class MSDnet(nn.Module):
 
         x_3_1 = self.h31_stride(x_2_1)
 
+        if USE_IMAGENET_SCALES:
+            x_4_1 = self.h41_stride(x_3_1)
+
         # layer 2
         x_1_2 = self.h12_regular(x_1_1)
 
@@ -107,6 +139,13 @@ class MSDnet(nn.Module):
             ), dim=1
         )
 
+        if USE_IMAGENET_SCALES:
+            x_4_2 = torch.cat((
+                self.h42_stride(x_3_1),
+                self.h42_regular(x_4_1)
+                ), dim=1
+            )
+
         # layer 3
         x_2_3 = torch.cat((
             self.h23_stride(torch.cat((x_1_1, x_1_2), dim=1)),
@@ -120,6 +159,13 @@ class MSDnet(nn.Module):
             ), dim=1
         )
 
+        if USE_IMAGENET_SCALES:
+            x_4_3 = torch.cat((
+                self.h43_stride(torch.cat((x_3_1, x_3_2), dim=1)),
+                self.h43_regular(torch.cat((x_4_1, x_4_2), dim=1))
+                ), dim=1
+            )
+
         # layer 4
         x_3_4 = torch.cat((
             self.h34_stride(torch.cat((x_2_1, x_2_2, x_2_3), dim=1)),
@@ -127,11 +173,17 @@ class MSDnet(nn.Module):
             ), dim=1
         )
 
-        # classifiers
+        if USE_IMAGENET_SCALES:
+            x_4_4 = torch.cat((
+                self.h44_stride(torch.cat((x_3_1, x_3_2, x_3_3), dim=1)),
+                self.h44_regular(torch.cat((x_4_1, x_4_2, x_4_3), dim=1))
+                ), dim=1
+            )
 
-        classifier_layer_2 = self.classifier_l2(x_3_2)
-        classifier_layer_3 = self.classifier_l3(x_3_3)
-        classifier_layer_4 = self.classifier_l4(x_3_4)
+        # classifiers
+        classifier_layer_2 = self.classifier_l2(x_4_2 if USE_IMAGENET_SCALES else x_3_2)
+        classifier_layer_3 = self.classifier_l3(x_4_2 if USE_IMAGENET_SCALES else x_3_3)
+        classifier_layer_4 = self.classifier_l4(x_4_2 if USE_IMAGENET_SCALES else x_3_4)
 
         return classifier_layer_2, classifier_layer_3, classifier_layer_4
 
@@ -183,7 +235,11 @@ class Classifier(nn.Module):
         super().__init__()
 
         self.classifier_conv1 = nn.Conv2d(in_ch, mid_ch, kernel_size=3, padding=0)
+        self.classifier_bn1 = nn.BatchNorm2d(mid_ch),
+        self.classifier_relu1 = nn.ReLU(mid_ch)
         self.classifier_conv2 = nn.Conv2d(mid_ch, out_ch, kernel_size=3, padding=0)
+        self.classifier_bn1 = nn.BatchNorm2d(mid_ch),
+        self.classifier_relu1 = nn.ReLU(mid_ch)
         self.classifier_avgpool = nn.AvgPool2d(3)
 
         self.dense = nn.Linear(out_ch * in_shape**2,
