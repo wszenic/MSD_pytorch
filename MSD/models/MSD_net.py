@@ -99,16 +99,15 @@ class MSDnet(nn.Module):
         # classifiers
         self.classifier_l2 = Classifier(in_ch=SCALE_CHANNELS['scale_3']*2,
                                         mid_ch=128,
-                                        out_ch=128,
-                                        in_shape=3)
+                                        out_ch=128)
 
         self.classifier_l3 = Classifier(in_ch=SCALE_CHANNELS['scale_3']*2,
                                         mid_ch=128,
-                                        out_ch=128, in_shape=3)
+                                        out_ch=128)
 
         self.classifier_l4 = Classifier(in_ch=SCALE_CHANNELS['scale_3']*2,
                                         mid_ch=128,
-                                        out_ch=128, in_shape=3)
+                                        out_ch=128)
 
 
     def forward(self, x):
@@ -231,7 +230,7 @@ class LayerNScale(nn.Module):
 
 
 class Classifier(nn.Module):
-    def __init__(self, in_ch, mid_ch, out_ch, in_shape):
+    def __init__(self, in_ch, mid_ch, out_ch):
         super().__init__()
 
         self.classifier_conv1 = nn.Conv2d(in_ch, mid_ch, kernel_size=3, padding=0)
@@ -242,7 +241,7 @@ class Classifier(nn.Module):
         self.classifier_relu2 = nn.ReLU(mid_ch)
         self.classifier_avgpool = nn.AvgPool2d(kernel_size=2)
 
-        self.dense = nn.Linear(out_ch * in_shape**2,
+        self.dense = nn.Linear(out_ch * 5**2,
                                NUM_CLASSES)
 
     def forward(self, x):
@@ -253,7 +252,6 @@ class Classifier(nn.Module):
         x = self.classifier_bn2(x)
         x = self.classifier_relu2(x)
         x = self.classifier_avgpool(x)
-        print(f"x shape: {x.shape}")
         x = x.view(x.shape[0], -1)
         x = self.dense(x)
 
