@@ -231,8 +231,8 @@ class Classifier(nn.Module):
         self.classifier_bn1 = nn.BatchNorm2d(CLASSIFIER['scale_mid'])
         self.classifier_relu1 = nn.ReLU(CLASSIFIER['scale_mid'])
         self.classifier_conv2 = nn.Conv2d(CLASSIFIER['scale_mid'], CLASSIFIER['scale_out'], kernel_size=3, padding=0)
-        self.classifier_bn2 = nn.BatchNorm2d(CLASSIFIER['scale_mid'])
-        self.classifier_relu2 = nn.ReLU(CLASSIFIER['scale_mid'])
+        self.classifier_bn2 = nn.BatchNorm2d(CLASSIFIER['scale_out'])
+        self.classifier_relu2 = nn.ReLU(CLASSIFIER['scale_out'])
         self.classifier_avgpool = nn.AvgPool2d(kernel_size=2)
 
         self.dense = nn.Linear(CLASSIFIER['scale_out'] * 5**2,
