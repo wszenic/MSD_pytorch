@@ -248,6 +248,7 @@ class Classifier(nn.Module):
         x = self.classifier_bn2(x)
         x = self.classifier_relu2(x)
         x = self.classifier_avgpool(x)
+        print(f"dense input shape: {x.shape}")
         x = x.view(x.shape[0], -1)
         x = self.dense(x)
 
