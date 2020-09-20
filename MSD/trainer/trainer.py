@@ -43,9 +43,9 @@ class NeuralNetworkLearner(pl.LightningModule):
         self.train_transforms = transforms.Compose([
             transforms.Resize(256),
             transforms.CenterCrop(224),
-            transforms.RandomAffine(25, translate=(0.1, 0.1), scale=(0.9, 0.1), shear=8),
+            #transforms.RandomAffine(25, translate=(0.1, 0.1), scale=(0.9, 0.1), shear=8),
             transforms.ToTensor(),
-            transforms.RandomErasing(p=0.5, scale=(0.02, 0.25)),
+            #transforms.RandomErasing(p=0.5, scale=(0.02, 0.25)),
             normalization,
             transforms.RandomHorizontalFlip(0.5)
         ])
@@ -139,11 +139,13 @@ class NeuralNetworkLearner(pl.LightningModule):
     def prepare_data(self):
         dataset_description = pd.read_csv(DATASET_DESCRIPTION)
 
-        dataset_description = dataset_description[dataset_description.is_test == 0]
-
-        train_x, val_x, _, _ = train_test_split(dataset_description.full_path.tolist(),
-                                                dataset_description.class_id.tolist(), train_size=TRAIN_PERC,
-                                                stratify=dataset_description.class_id.tolist())
+        # dataset_description = dataset_description[dataset_description.is_test == 0]
+        #
+        # train_x, val_x, _, _ = train_test_split(dataset_description.full_path.tolist(),
+        #                                         dataset_description.class_id.tolist(), train_size=TRAIN_PERC,
+        #                                         stratify=dataset_description.class_id.tolist())
+        train_x = dataset_description.loc[dataset_description.is_test == 0, 'full_path'].tolist()
+        val_x = dataset_description.loc[dataset_description.is_test == 1, 'full_path'].tolist()
 
         self.train_dataset = CarsDataset(train_x, transforms=self.train_transforms)
         self.val_dataset = CarsDataset(val_x, transforms=self.val_transforms)
