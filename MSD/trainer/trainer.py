@@ -44,8 +44,8 @@ class NeuralNetworkLearner(pl.LightningModule):
             transforms.Resize(256),
             transforms.CenterCrop(224),
             transforms.RandomAffine(25, translate=(0.1, 0.1), scale=(0.9, 0.1), shear=8),
-            transforms.ToTensor(),
             transforms.ColorJitter(0.2, 0.2, 0.2, 0.1),
+            transforms.ToTensor(),
             transforms.RandomErasing(p=0.5, scale=(0.02, 0.25)),
             normalization,
             transforms.RandomHorizontalFlip(0.5)
