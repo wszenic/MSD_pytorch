@@ -130,7 +130,7 @@ class NeuralNetworkLearner(pl.LightningModule):
         neptune.log_metric('avg_train_acc_c2', avg_acc_c2)
         neptune.log_metric('avg_train_acc_c3', avg_acc_c3)
 
-        return {'avg_train_loss': avg_loss}
+        return {'train_loss': avg_loss}
 
     def validation_step(self, batch, batch_id):
         x, label = batch
@@ -186,7 +186,7 @@ class NeuralNetworkLearner(pl.LightningModule):
         neptune.log_metric('avg_val_acc_c2', avg_acc_c2)
         neptune.log_metric('avg_val_acc_c3', avg_acc_c3)
 
-        return {'avg_val_loss': avg_loss}
+        return {'val_loss': avg_loss}
 
 
     def prepare_data(self):
