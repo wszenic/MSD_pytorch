@@ -1,4 +1,4 @@
-from MSD.settings.config import NUM_CLASSES, SCALE_CHANNELS, IMAGE_COLOUR_MODE, USE_IMAGENET_SCALES, CLASSIFIER
+from MSD.settings.config import NUM_CLASSES, SCALE_CHANNELS, IMAGE_COLOUR_MODE, USE_IMAGENET_SCALES, CLASSIFIER, DROPOUT
 
 import torch
 from torch import nn
@@ -236,6 +236,7 @@ class Classifier(nn.Module):
         self.classifier_bn2 = nn.BatchNorm2d(CLASSIFIER['scale_out'])
         self.classifier_relu2 = nn.ReLU(CLASSIFIER['scale_out'])
         self.classifier_avgpool = nn.AvgPool2d(kernel_size=2)
+        self.dropout = nn.Dropout(DROPOUT)
 
         in_shape = 2 if USE_IMAGENET_SCALES else 5
 
@@ -251,6 +252,7 @@ class Classifier(nn.Module):
         x = self.classifier_relu2(x)
         x = self.classifier_avgpool(x)
         x = x.view(x.shape[0], -1)
+        x = self.dropout(x)
         x = self.dense(x)
 
         return x

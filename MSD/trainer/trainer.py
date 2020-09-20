@@ -43,9 +43,9 @@ class NeuralNetworkLearner(pl.LightningModule):
         self.train_transforms = transforms.Compose([
             transforms.Resize(256),
             transforms.CenterCrop(224),
-            #transforms.RandomAffine(25, translate=(0.1, 0.1), scale=(0.9, 0.1), shear=8),
+            transforms.RandomAffine(25, translate=(0.1, 0.1), scale=(0.9, 0.1), shear=8),
             transforms.ToTensor(),
-            transforms.ColorJitter(),
+            transforms.ColorJitter(0.2, 0.2, 0.2, 0.1),
             transforms.RandomErasing(p=0.5, scale=(0.02, 0.25)),
             normalization,
             transforms.RandomHorizontalFlip(0.5)
@@ -214,7 +214,7 @@ class NeuralNetworkLearner(pl.LightningModule):
             optimizer = torch.optim.SGD(self.parameters(), lr=self.learning_rate, weight_decay=1e-4, momentum=0.9,
                                         nesterov=True)
         else:
-            optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate, weight_decay=WEIGHT_DECAY)
+            optimizer = torch.optim.AdamW(self.parameters(), lr=self.learning_rate, weight_decay=WEIGHT_DECAY)
 
         if USE_SCHEDULER:
             scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=OPTIMIZER_STEP_SIZE, gamma=OPTIMIZER_GAMMA)
