@@ -96,14 +96,39 @@ class NeuralNetworkLearner(pl.LightningModule):
 
         logs = {'train_loss': loss}
 
-        return {'loss': loss, 'acc': acc, 'log': logs}
+        return {'loss': loss,
+                'loss_c1': loss_class_1,
+                'loss_c2': loss_class_2,
+                'loss_c3': loss_class_3,
+                'acc': acc,
+                'acc_C1': accuracy_class_1,
+                'acc_C2': accuracy_class_2,
+                'acc_C3': accuracy_class_3,
+                'log': logs}
 
     def training_epoch_end(self, outputs):
         avg_loss = torch.stack([x['loss'] for x in outputs]).mean()
+
+        avg_loss_c1 = torch.stack([x['loss_c1'] for x in outputs]).mean()
+        avg_loss_c2 = torch.stack([x['loss_c2'] for x in outputs]).mean()
+        avg_loss_c3 = torch.stack([x['loss_c3'] for x in outputs]).mean()
+
         neptune.log_metric('avg_train_loss', avg_loss)
 
+        neptune.log_metric('avg_train_loss_c1', avg_loss_c1)
+        neptune.log_metric('avg_train_loss_c2', avg_loss_c2)
+        neptune.log_metric('avg_train_loss_c3', avg_loss_c3)
+
         avg_acc = torch.stack([x['acc'] for x in outputs]).mean()
+
+        avg_acc_c1 = torch.stack([x['acc_C1'] for x in outputs]).mean()
+        avg_acc_c2 = torch.stack([x['acc_C2'] for x in outputs]).mean()
+        avg_acc_c3 = torch.stack([x['acc_C3'] for x in outputs]).mean()
+
         neptune.log_metric('avg_train_acc', avg_acc)
+        neptune.log_metric('avg_train_acc_c1', avg_acc_c1)
+        neptune.log_metric('avg_train_acc_c2', avg_acc_c2)
+        neptune.log_metric('avg_train_acc_c3', avg_acc_c3)
 
         return {'avg_train_loss': avg_loss}
 
@@ -126,16 +151,43 @@ class NeuralNetworkLearner(pl.LightningModule):
 
         logs = {'val_loss': loss}
 
-        return {'loss': loss, 'acc': acc, 'log': logs}
+        return {'loss': loss,
+                'loss_c1': loss_class_1,
+                'loss_c2': loss_class_2,
+                'loss_c3': loss_class_3,
+                'acc': acc,
+                'acc_C1': accuracy_class_1,
+                'acc_C2': accuracy_class_2,
+                'acc_C3': accuracy_class_3,
+                'log': logs}
 
     def validation_epoch_end(self, outputs):
         avg_loss = torch.stack([x['loss'] for x in outputs]).mean()
-        neptune.log_metric('val_loss', avg_loss)
+        neptune.log_metric('avg_val_loss', avg_loss)
+
+        avg_loss_c1 = torch.stack([x['loss_c1'] for x in outputs]).mean()
+        avg_loss_c2 = torch.stack([x['loss_c2'] for x in outputs]).mean()
+        avg_loss_c3 = torch.stack([x['loss_c3'] for x in outputs]).mean()
+
+        neptune.log_metric('avg_val_loss', avg_loss)
+
+        neptune.log_metric('avg_val_loss_c1', avg_loss_c1)
+        neptune.log_metric('avg_val_loss_c2', avg_loss_c2)
+        neptune.log_metric('avg_val_loss_c3', avg_loss_c3)
 
         avg_acc = torch.stack([x['acc'] for x in outputs]).mean()
-        neptune.log_metric('avg_val_acc', avg_acc)
 
-        return {'val_loss': avg_loss}
+        avg_acc_c1 = torch.stack([x['acc_C1'] for x in outputs]).mean()
+        avg_acc_c2 = torch.stack([x['acc_C2'] for x in outputs]).mean()
+        avg_acc_c3 = torch.stack([x['acc_C3'] for x in outputs]).mean()
+
+        neptune.log_metric('avg_val_acc', avg_acc)
+        neptune.log_metric('avg_val_acc_c1', avg_acc_c1)
+        neptune.log_metric('avg_val_acc_c2', avg_acc_c2)
+        neptune.log_metric('avg_val_acc_c3', avg_acc_c3)
+
+        return {'avg_val_loss': avg_loss}
+
 
     def prepare_data(self):
         dataset_description = pd.read_csv(DATASET_DESCRIPTION)
@@ -159,7 +211,7 @@ class NeuralNetworkLearner(pl.LightningModule):
 
     def configure_optimizers(self):
         if OPTIMIZER_TYPE == 'SGD':
-            optimizer = torch.optim.SGD(self.parameters(), lr=self.learning_rate, weight_decay=10e-4, momentum=0.9,
+            optimizer = torch.optim.SGD(self.parameters(), lr=self.learning_rate, weight_decay=1e-4, momentum=0.9,
                                         nesterov=True)
         else:
             optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate, weight_decay=WEIGHT_DECAY)
