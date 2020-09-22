@@ -1,4 +1,4 @@
-from MSD.settings.config import LABEL_FILE_TRAIN, TRAIN_FOLDER, DATASET_DESCRIPTION,\
+from MSD.settings.config import LABEL_FILE_TRAIN, DATASET_DESCRIPTION,\
                                 IMAGE_COLOUR_MODE
 
 import pandas as pd
